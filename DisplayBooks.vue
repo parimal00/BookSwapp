@@ -4,33 +4,35 @@
       <div class="container-fostrap">
         <div class="content">
           <div class="container">
-            <div class="row my-4" v-for="(e, row) in 3" :key="row">
+            <div class="row my-4" v-for="(e, row) in books.length" :key="row">
               <div
-                v-for="(e, column) in 3"
+                v-for="(f, column) in books[row].length"
                 :key="column"
                 class="col-xs-12 col-sm-4"
               >
-                <div class="card">
-                  <a
-                    class="img-card"
-                    href="http://www.fostrap.com/2016/03/bootstrap-3-carousel-fade-effect.html"
-                  >
+                <div
+                  class="card"
+                  @click="
+                    showSwapBookForm(
+                      books[row][column].books_id,
+                      books[row][column].author_name,
+                      books[row][column].description,
+                      books[row][column].email
+                    )
+                  "
+                >
+                  <div class="img-card">
                     <img :src="'/uploads/' + books[row][column].book_image" />
-                  </a>
+                  </div>
                   <div class="card-content">
                     <h4 class="card-title">
-                      <a href=""> {{ books[row][column].book_name }} </a>
+                      {{ books[row][column].book_name }}
                     </h4>
                     <p class="">Author:{{ books[row][column].author_name }}</p>
                     <p class="">Posted By:{{ books[row][column].name }}</p>
                   </div>
                   <div class="card-read-more">
-                    <a
-                      href="http://www.fostrap.com/2016/03/bootstrap-3-carousel-fade-effect.html"
-                      class="btn btn-link btn-block"
-                    >
-                      Read More
-                    </a>
+                    <div class="btn btn-primary btn-block">Swap Book</div>
                   </div>
                 </div>
               </div>
@@ -67,22 +69,37 @@
         <SwapBookForm :id="id" :userIdToSend="userIdToSend" :email="email" />
       </div>
     </div> -->
+
+    <div v-if="show">
+      <SwapBookForm
+        :id="id"
+        :userIdToSend="userIdToSend"
+        :email="email"
+        @closeSwapForm="closeSwapForm"
+      />
+    </div>
+    <div v-if="loginComponentStatus">
+      <LoginComponent @closeLogin = "closeLogin" />
+    </div>
   </div>
 </template>
 
 <script>
 import SwapBookForm from "./SwapBookForm.vue";
+import LoginComponent from "./LoginComponent.vue";
 
 export default {
-  components: { SwapBookForm },
+  components: { LoginComponent, SwapBookForm },
   props: ["email"],
   data() {
     return {
+      loginComponentStatus: false,
       row: 0,
+      page:1,
       column: 0,
       no_of_row: 0,
       show: false,
-      books: null,
+      books: [],
       id: null,
       author: null,
       description: null,
@@ -90,35 +107,41 @@ export default {
     };
   },
   methods: {
+    closeLogin(){
+      this.loginComponentStatus = !this.loginComponentStatus
+    },
+    
+    closeSwapForm() {
+     this.show = !this.show
+    },
     showSwapBookForm(id, author, description, user_id) {
-      this.show = true;
-      this.id = id;
-      this.author = author;
-      this.description = description;
-      this.userIdToSend = user_id;
-      console.log(this.books.email);
+      if (this.email == "no_email") {
+        this.loginComponentStatus = !this.loginComponentStatus;
+      } else {
+        this.show = true;
+        this.id = id;
+        this.author = author;
+        this.description = description;
+        this.userIdToSend = user_id;
+        console.log(this.books.email);
+      }
     },
   },
   mounted() {
-    axios.get("/api/viewBooks").then((response) => {
-      //console.log(response.data.email);
-      this.books = response.data;
-      this.no_of_row = parseInt(response.data.length / 3) + 1;
 
-      //console.log(this.no_of_row);
-      const arr = response.data;
+    axios.get("/api/viewBooks").then((response) => {
+      console.log(response);
+
+      //this.no_of_row = parseInt(response.data.data.length / 3) + 1;
+
+      const arr = response.data.data;
 
       const newArr = [];
       while (arr.length) newArr.push(arr.splice(0, 3));
+     
 
       this.books = newArr;
-      let i;
-      let j;
-      for (i = 0; i < 3; i++) {
-        for (j = 0; j < 3; j++) {
-          console.log(this.books[i][j].id);
-        }
-      }
+    
     });
   },
 };

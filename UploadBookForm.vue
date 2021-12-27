@@ -1,14 +1,7 @@
 <template>
  <div class="uploadbook-container"> 
    
-   <!-- <form action="">
-     <Label>Email:</Label>
-     <input type="text" required>
-
-     
-     
-
-   </form> -->
+ 
     <div>
       
   
@@ -166,7 +159,7 @@ label{
 .scroll {
                 margin:4px, 4px;
                 padding:4px;
-               background: brown;
+              
                 width: 100%;
                 height: 70vh;
                 overflow-x: hidden;

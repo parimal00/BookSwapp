@@ -1,10 +1,6 @@
 <template>
   <div>
- 
-<!-- Modal -->
-
     <div>
-    
       <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container-fluid">
           <a class="navbar-brand" href="#">Navbar</a>
@@ -27,9 +23,12 @@
               <li class="nav-item" @click="uploadBookClickHandlar">
                 <a class="nav-link" href="#">Post a book?</a>
               </li>
-             
+
               <li class="nav-item" @click="notificationClickHandlar">
-                <a class="nav-link"  href="#">Notifications</a>
+                <a class="nav-link" href="#">Notifications</a>
+              </li>
+              <li class="nav-item" @click="messagesClickHandlar" >
+                <a class="nav-link"  href="#">Chat</a>
               </li>
             </ul>
             <form class="d-flex">
@@ -39,38 +38,53 @@
                 placeholder="Search"
                 aria-label="Search"
               />
-              <button class="btn btn-outline-success" type="submit">Search</button>
+              <button class="btn btn-outline-success" type="submit">
+                Search
+              </button>
+              <button ><a href="logout">logout</a></button>
             </form>
           </div>
         </div>
       </nav>
-      <ul>
+
+      <!-- <ul>
         <li
           @click="uploadBookClickHandlar"
           data-bs-toggle="modal"
           data-bs-target="#exampleModal"
-        >Post a book?</li>
-        <li  data-bs-toggle="modal"
-          data-bs-target="#exampleModal" @click="notificationClickHandlar">Notifications</li>
+        >
+          Post a book?
+        </li>
+        <li
+          data-bs-toggle="modal"
+          data-bs-target="#exampleModal"
+          @click="notificationClickHandlar"
+        >
+          Notifications
+        </li>
         <li @click="messagesClickHandlar">Messages</li>
-      </ul>
+      </ul> -->
     </div>
-   
-    <div v-if="messageStatus">
-      <Messages />
-    </div>
-   
+      <DisplayBooks :email="email"/>
 
-    <DisplayBooks :email="email"/>
-    
-     <div v-if="showUploadBookForm">
+    <div v-if="messageStatus">
+      <ChatComponent :email="email" @closeModal="messagesClickHandlar"/>
+    </div>
+
+
+    <div v-if="loginComponentStatus">
+         <LoginComponent/>
+    </div>
+
+ 
+
+    <div v-if="showUploadBookForm">
       <UploadBookForm :email="email" @closeModal="uploadBookClickHandlar" />
     </div>
 
     <div v-if="notificationStatus">
-      <Notifications :email="email" @closeModal="notificationClickHandlar"/>
+      <Notifications :email="email" @closeModal="notificationClickHandlar" />
     </div>
-    
   </div>
 </template>
 
@@ -79,13 +93,19 @@ import DisplayBooks from "./DisplayBooks.vue";
 import UploadBookForm from "./UploadBookForm.vue";
 import Notifications from "./Notifications.vue";
 import Messages from "./Messages.vue";
+import ChatComponent from "./ChatComponent.vue";
+import LoginComponent from "./LoginComponent.vue";
+
 export default {
-  components: { DisplayBooks, UploadBookForm, Notifications, Messages},
-  data() {
+  components: {LoginComponent, DisplayBooks,ChatComponent,UploadBookForm, Notifications, Messages },
+  props: ["email"],
+
+   data() {
     return {
       showUploadBookForm: false,
       notificationStatus: false,
-      messageStatus: false
+      messageStatus: false,
+      loginComponentStatus:false,
     };
   },
   methods: {
@@ -94,17 +114,27 @@ export default {
       console.log("waaaa");
     },
     notificationClickHandlar() {
+      if(this.email == "no_email"){
+        this.loginComponentStatus=!this.loginComponentStatus
+      }
+      else{
       this.notificationStatus = !this.notificationStatus;
+      }
       console.log("clicked");
     },
     messagesClickHandlar() {
-      this.messageStatus = true;
-    }
+      if(this.email=="no_email"){
+        this.loginComponentStatus=!this.loginComponentStatus
+      }
+      else{
+      this.messageStatus = !this.messageStatus;
+      }
+    },
   },
-  mounted() {
 
+  mounted() {
+    console.log(this.email);
     console.log("Component mounted.");
   },
-  props: ["email"]
 };
 </script>

@@ -1,118 +1,287 @@
 <template>
   <div class="uploadbook-container">
-      <div class="abcd" >
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="exampleModalLabel">Notifications</h5>
-          <button
-            type="button"
-            @click="closeModal"
-            class="btn-close"
-            data-bs-dismiss="modal"
-            aria-label="Close"
-          ></button>
-        </div>
-        <div class="modal-body scroll">
-          <div class="list-group">
-  <a href="#" class="list-group-item list-group-item-action">
-     <div v-for="notification in notifications" :key="notification.notification_id"  >
-           <div v-if="notification.status===2"> 
-            {{notification.name}} wants
-    to swap {{notification.book_name}}
-    with {{notification.req_book_title}} <br>
-    <Button class="btn btn-primary " @click="acceptReqHandlar(notification.req_book_title,notification.email)" > Accept </Button>
-    <Button class="btn btn-primary " @click="rejectReqHandlar(notification.req_book_title,notification.email)"> Reject </Button>
-    </div>
-    <div v-if="notification.status===1"> 
-            {{notification.name}} has accepted your request
-    
-    </div>
-     <div v-if="notification.status===0"> 
-         <p> {{notification.name}} has rejected your request</p>  
-    
-    </div>
-     </div>
-  </a>
-  
+    <div class="abcd">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Notifications</h5>
+            <button
+              type="button"
+              @click="closeModal"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body scroll">
+            <div class="list-group">
+              <div v-if="!notifications.length">
+                There is no new Notifications for you!!
+              </div>
 
-             
-      </div>
+              <div
+                class="list-group-item list-group-item-action"
+                v-for="notification in notifications"
+                :key="notification.notification_id"
+              >
+                <div v-if="notification.status === 2">
+                  <div v-if="notification.books.length == 1">
+                    <div v-if="notification.send_to==email">
+                      {{ notification.send_from }} wants to swap your book
+                      <div
+                        v-for="myBooks in notification.myBooks"
+                        :key="myBooks.books_id"
+                      >
+                        "{{ myBooks.book_name }}"{{ myBooks.books_id }}
+                      </div>
+                      with
+                      <div v-for="book in notification.books" :key="book.id">
+                        ({{ book.book_name }}){{ book.books_id }}
+
+                        <Button
+                          class="btn btn-primary"
+                          @click="
+                            acceptSingleRequest(
+                              notification.send_from,
+                              notification.notification_id,
+                              notification.books,
+                              notification.book_id
+                            )
+                          "
+                        >
+                          Accept
+                        </Button>
+                        <Button
+                          class="btn btn-primary"
+                          @click="
+                            rejectReqHandlar(
+                              notification.send_from,
+                            notification.notification_id,
+                            notification.books
+                            )
+                          "
+                        >
+                          Reject
+                        </Button>
+                      </div>
+                    </div>
+                    <div v-if="notification.send_from==email">
+                      Request sent to {{notification.send_to}}
+                    </div>
+                  </div>
+                  <div v-if="notification.books.length > 1">
+                    <div v-if="notification.send_to == email">
+                      {{ notification.send_from }} wants to swap your book
+
+                      <div
+                        v-for="myBooks in notification.myBooks"
+                        :key="myBooks.books_id"
+                      >
+                        "{{ myBooks.book_name }}"
+                      </div>
+
+                      with
+
+                      <fieldset id="group1">
+                        <div v-for="book in notification.books" :key="book.id">
+                          ({{ book.book_name }})
+                          <input
+                            type="radio"
+                            :value="book.book_ref_id"
+                            v-model="radio"
+                          />
+                          or
+                        </div>
+                      </fieldset>
+
+                      <Button
+                        class="btn btn-primary"
+                        @click="
+                          acceptReqHandlar(
+                            notification.send_from,
+                            notification.notification_id,
+                            notification.books,
+                            notification.book_id
+                          )
+                        "
+                      >
+                        Accept
+                      </Button>
+                      <Button
+                        class="btn btn-primary"
+                        @click="
+                          rejectReqHandlar(
+                            notification.send_from,
+                            notification.notification_id,
+                            notification.books
+                          )
+                        "
+                      >
+                        Reject
+                      </Button>
+                    </div>
+                    <div v-if="notification.send_from == email">
+                      Request sent to {{ notification.send_to }}
+                    </div>
+                  </div>
+                </div>
+                <div v-if="notification.status === 1">
+                  <div v-if="notification.send_to == email">
+                    {{ notification.send_from }} has accepted your request with
+                    <div
+                      v-for="acc_book in notification.acc_book"
+                      :key="acc_book.books_id"
+                    >
+                      {{ acc_book.book_name }}
+                    </div>
+                  </div>
+                  <div v-if="notification.send_from == email">
+                    You have accepted the request from
+                    {{ notification.send_to }}
+                  </div>
+                </div>
+                <div v-if="notification.status === 0">
+                  <div v-if="notification.send_to == email">
+                    <p>
+                      {{ notification.send_from }} has rejected your request
+                    </p>
+                  </div>
+                  <div v-if="notification.send_from == email">
+                    <p>
+                      You have rejected the request from
+                      {{ notification.send_from }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" @click="closeModal">
+              Close
+            </button>
+          </div>
         </div>
-        <div class="modal-footer">
-          <button
-            type="button"
-            class="btn btn-secondary"
-            @click="closeModal"
-           
-          >
-            Close
-          </button>
-          
-        </div>
       </div>
     </div>
-    </div>
-    </div>
-  
-  
+  </div>
 </template>
 
 <script>
 export default {
   data() {
     return {
-      notifications: null,
+      sender_book_id: 0,
+      books_idz: [],
+      radio: null,
+      notifications: [],
+
       formData: {
         email: this.email,
       },
     };
   },
- 
+
   props: ["email"],
   methods: {
-    closeModal(){
-      console.log('clicked')
-      this.$emit('closeModal')
-     
+    acceptSingleRequest(send_from, notification_id, books, book_id) {
+      console.log(send_from);
+      console.log(notification_id);
+      console.log(books);
+      console.log(book_id);
+      books.forEach((element) => {
+        this.sender_book_id = element.books_id;
+      });
+      console.log(this.sender_book_id);
+      axios
+        .post("/api/acceptSingleReq", {
+          notification_id: notification_id,
+          send_from: this.email,
+          send_to: send_from,
+          book_id: book_id,
+          sender_book_id: this.sender_book_id,
+        })
+        .then((response) => {
+          console.log(response);
+          this.loadNotifComponent()
+        });
     },
-    
-    acceptReqHandlar(req_book_title, email) {
-      let fd = new FormData();
-      fd.append("req_book_title", req_book_title);
-      fd.append("send_from", email);
-      fd.append("send_to", this.email);
-
-      axios.post("/api/acceptReq", fd).then((response) => {
+    loadNotifComponent() {
+      axios.post("/api/view_notification", this.formData).then((response) => {
+        this.notifications = response.data;
+        console.log(this.notifications);
         console.log(response);
       });
     },
-    rejectReqHandlar(req_book_title, email) {
+
+    closeModal() {
+      console.log("clicked");
+      this.$emit("closeModal");
+    },
+
+    acceptReqHandlar(send_from, notification_id, books, book_id) {
+      books.forEach((element) => {
+        this.books_idz.push(element.books_id);
+      });
+
+      this.books_idz.forEach((element) => {
+        console.log(element);
+      });
+      console.log(books);
+
+      console.log(send_from);
+      console.log(notification_id);
+      console.log(book_id);
+      console.log(this.radio);
+
+      axios
+        .post("/api/acceptReq", {
+          notification_id: notification_id,
+          books: this.books_idz,
+          radio: this.radio,
+          send_from: this.email,
+          send_to: send_from,
+          book_id: book_id,
+        })
+        .then((response) => {
+          console.log(response);
+          this.loadNotifComponent();
+        });
+    },
+    rejectReqHandlar(send_from, notification_id, books) {
       console.log("rejected");
-      let fd = new FormData();
-      fd.append("req_book_title", req_book_title);
-      fd.append("send_from", email);
-      fd.append("send_to", this.email);
 
-      axios.post("/api/rejectReq", fd).then((response) => {
-        console.log(response);
+      books.forEach((element) => {
+        this.books_idz.push(element.books_id);
       });
+
+      axios
+        .post("/api/rejectReq", {
+          notification_id: notification_id,
+          books: this.books_idz,
+          send_to: send_from,
+          send_from: this.email,
+        })
+        .then((response) => {
+          console.log(response);
+          this.loadNotifComponent();
+        });
     },
   },
   mounted() {
+    console.log("email is " + this.email);
     axios.post("/api/view_notification", this.formData).then((response) => {
-      console.log(response.data);
       this.notifications = response.data;
       console.log(this.notifications);
+      console.log(response);
     });
   },
 };
 </script>
 
 <style scoped>
-.modal-body{
-    width:100%;
-    
+.modal-body {
+  width: 100%;
 }
 .uploadbook-container {
   position: fixed;
@@ -121,7 +290,7 @@ export default {
   left: 0;
   right: 0;
   background-color: rgba(0, 0, 0, 0.3);
- 
+
   display: flex;
   justify-content: center;
   align-items: center;
